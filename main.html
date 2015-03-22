@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<style>
+	 body {
+        background-color:black;
+   	    display:block;
+    	overflow:hidden;
+    }
+    #canvas{
+        position:absolute;
+        left:0;
+        right:0;
+        margin-left:auto;
+        margin-right:auto;
+		background-color: black;
+    }
+     #health{
+         position:absolute;
+         margin-top:200;
+         background-color: black;
+     }
+</style>
+<body>
+	<canvas id = "canvas" width="1000" height="400">get new browser</canvas>
+    <canvas id = "health" width="200" height="200">get new browser</canvas>
+    <div id="console"></div>
+	
+	<script src = "levelDesigner.js"></script>
+	<script src = "character.js"></script>
+	<script src = "map1.js"></script>
+	<script src = "monster.js"></script>
+    <script src = "health.js"></script>
+	
+	<script>
+	
+		window.requestAnimFrame = (function () {
+        var func = window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function (callback, element)
+        {
+            window.setTimeout(callback, 1000 / this.fps);
+        };
+
+        // apply to our window global to avoid illegal invocations (it's a native)
+        return function (callback, element) {
+        func.apply(window, [callback, element]);
+        };
+	    })();
+
+	    var canvas = document.getElementById("canvas");
+        var canvasH = document.getElementById("health");
+	
+		//set foccus for user input
+		canvas.setAttribute('tabindex','0');
+		canvas.focus();
+		canvas.addEventListener( "keydown", doKeyDown, true);
+		canvas.addEventListener( "keyup", doKeyUp, true);
+		
+    	var ctx = canvas.getContext("2d");
+        var ctxH = canvasH.getContext('2d');
+
+        //array with user input
+    	var keyboardInput = new Array(false,false,false,false,false);
+
+        //initialising main objects
+    	var map = new map1();
+    	var player = new character(canvas.width,canvas.height,map);
+    	var Level = new Level(map,player);
+        var health = new health(player.health)
+        player.loadTextures();
+    	Level.loadTextures();
+
+        window.onload = function() { //allow textures to load in cashe memory b4 using them to calculate
+            if(!window.location.hash) {
+                window.location = window.location + '#loaded';
+                window.location.reload();
+            }
+        }
+
+        update();
+
+		function update()
+		{
+            //proces game logic (userinput, updating simulation data)
+			player.update(keyboardInput);
+			Level.update();
+            health.update(player.health);
+			draw();
+		} 	
+		
+		function draw()
+ 		{
+            // renders textures and processes animations
+            if(player.health >= 0){
+      	        requestAnimFrame(update);
+            }
+      	    Level.draw(ctx);
+      	    player.draw(ctx);
+
+            health.draw(ctxH);
+        }
+		
+		function doKeyDown(e) {
+			readKeyboardInput(e);
+
+		}
+		function doKeyUp(e) {
+			readLostKeyboardInput(e);
+		}
+
+
+      function readKeyboardInput(e) {
+            //saves keys pressed in array
+      	    if(e.keyCode == 37|| e.keyCode == 65) //left a
+      		    this.keyboardInput[0] = true;
+     		if(e.keyCode == 38 || e.keyCode == 87) //up w
+     			this.keyboardInput[1] = true;
+     		if(e.keyCode == 39 || e.keyCode == 68) //right d
+     			this.keyboardInput[2] = true;
+     		if(e.keyCode == 40 || e.keyCode == 83) //down s
+     			this.keyboardInput[3] = true;
+            if(e.keyCode == 49) //1
+                this.keyboardInput[4] = true;
+		}
+  		function readLostKeyboardInput(e) {
+            //sets released keys to false in array
+            if(e.keyCode == 37|| e.keyCode == 65) //left a
+                this.keyboardInput[0] = false;
+            if(e.keyCode == 38 || e.keyCode == 87) //up w
+                this.keyboardInput[1] = false;
+            if(e.keyCode == 39 || e.keyCode == 68) //right d
+                this.keyboardInput[2] = false;
+            if(e.keyCode == 40 || e.keyCode == 83) //down s
+                this.keyboardInput[3] = false;
+     	}
+
+
+	</script>
+  </body>
+</html>
